@@ -86,6 +86,31 @@ class ParsingTableGenerator(object):
         return self.parsing_table
 
 
+def parseDict(AST):
+    """
+    parse AST to dict obj.
+    """
+    return {'symbol': AST.symbol,
+            'child': [parseDict(node) for node in AST.child if AST.child]}
+
+
+def predictingParsing(parsing_table, stack, string):
+    pass
+
+
+class AST(object):
+    """
+    Abstract Sytex Tree
+    """
+
+    def __init__(self, symbol):
+        self.symbol = symbol
+        self.child = list()
+        
+    def __str__(self):
+        return json.dumps(parseDict(self), indent=2)
+
+
 if __name__ == '__main__':
     grammar = ('E -> TR',
             'R -> +TR',
@@ -105,3 +130,8 @@ if __name__ == '__main__':
     print(parsingTableGenerator.first_dict)
     print(parsingTableGenerator.follow_dict)
     print(parsing_table)
+
+    string = "i+i-(i+i)#"
+    stack = []
+
+    syntaxTree = dict{}
