@@ -94,8 +94,40 @@ def parseDict(AST):
             'child': [parseDict(node) for node in AST.child if AST.child]}
 
 
-def predictingParsing(parsing_table, stack, string):
-    pass
+def predictingParsing(parsing_table, stack, string, non_terminators):
+    stack.append('#')
+    stack.append('E')
+    IP = 0
+    p_seq = []
+    while True:
+        # AST.child = parsing_table[stack[-1], string[IP]][1]
+        if len(stack) == 0:
+            break
+        elif stack[-1] in non_terminators:
+            p = parsing_table[stack[-1], string[IP]]
+            p_seq.append(p)
+            stack.pop()
+            if 'ε' not in p[1]:
+                reversed_p = copy.copy(p[1])
+                reversed_p.reverse()
+                stack += reversed_p
+        elif stack[-1] == string[IP]:
+            stack.pop()
+            IP += 1
+        else:
+            raise Exception('asdasd')
+    
+    return p_seq
+
+
+def ASTGenerator(ast_root, p_seq, non_terminators):
+    if len(p_seq) != 0:
+        ast_root.child = [AST(node) for node in p_seq.pop(0)[1]]
+        for ast_node in ast_root.child:
+            if ast_node.symbol in non_terminators:
+                ASTGenerator(ast_node, p_seq, non_terminators)
+    else:
+        return
 
 
 class AST(object):
@@ -113,12 +145,12 @@ class AST(object):
 
 if __name__ == '__main__':
     grammar = ('E -> TR',
-            'R -> +TR',
-            'R -> -TR',
-            'R -> ε',
-            'T -> (E)',
-            'T -> i',
-            'T -> n')
+               'R -> +TR',
+               'R -> -TR',
+               'R -> ε',
+               'T -> (E)',
+               'T -> i',
+               'T -> n')
 
     non_terminators = ('E', 'T', 'R')
     terminators = ('i', 'n', '(', ')', '+', '-')
@@ -132,6 +164,15 @@ if __name__ == '__main__':
     print(parsing_table)
 
     string = "i+i-(i+i)#"
+    string = list(string)
     stack = []
 
-    syntaxTree = dict{}
+    syntaxTree = dict()
+
+    p_seq = predictingParsing(parsing_table, stack, string, non_terminators)
+    print(p_seq)
+
+    ast_root = AST(p_seq[0][0])
+    ASTGenerator(ast_root, p_seq, non_terminators)
+
+    print(parseDict(ast_root))
