@@ -23,23 +23,12 @@ def findFirstWrapper(symbol, p_list, nonTs):
     if symbol not in nonTs:
         first_set.add(symbol)
     else:
+        first_set |= set([p[1][0] for p in p_list if p[0] == symbol and p[1][0] not in nonTs])
         for p in p_list:
-            if 'ε' in p[1]:
-                first_set.add(('ε'))
-        findFirst(first_set, symbol, p_list, nonTs)
+            if p[0] == symbol and p[1][0] in nonTs:
+                first_set |= findFirstWrapper(p[1][0], p_list, nonTs) - set(('ε'))
         first_set -= set([None])
     return first_set
-
-
-def findFirst(first_set, symbol, p_list, nonTs):
-    for p in p_list:
-        if p[0] == symbol:
-            for v in p[1]:
-                if v[0] in nonTs:
-                    first_set.add(findFirst(first_set, v[0], p_list, nonTs))
-                else:
-                    if v[0] != 'ε':
-                        first_set.add(v[0])
 
 
 def followConstructor(p_list, nonTs):
